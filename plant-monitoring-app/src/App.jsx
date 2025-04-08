@@ -4,7 +4,6 @@ import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
 import Dashboard from "./pages/DashBoard";
 import Settings from "./pages/Settings";
-import SimulateSensorData from "./utils/SimulateSensorData"; // ✅ Import
 import "./index.css";
 
 function App() {
@@ -53,45 +52,29 @@ function App() {
   // Simulate sensor data every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      const data = SimulateSensorData();
-      setSensorData(data);
-
-      const now = new Date().toLocaleTimeString();
-      const alerts = [];
-
-      // Threshold checks
-      if (data.temperature > thresholds.temperature.high) {
-        alerts.push({ message: `🌡️ High Temperature: ${data.temperature}°C`, time: now });
-      } else if (data.temperature < thresholds.temperature.low) {
-        alerts.push({ message: `🌡️ Low Temperature: ${data.temperature}°C`, time: now });
-      }
-
-      if (data.humidity > thresholds.humidity.high) {
-        alerts.push({ message: `💧 High Humidity: ${data.humidity}%`, time: now });
-      } else if (data.humidity < thresholds.humidity.low) {
-        alerts.push({ message: `💧 Low Humidity: ${data.humidity}%`, time: now });
-      }
-
-      if (data.soilMoisture > thresholds.soilMoisture.high) {
-        alerts.push({ message: `🌱 Soil Moisture Too High: ${data.soilMoisture}`, time: now });
-      } else if (data.soilMoisture < thresholds.soilMoisture.low) {
-        alerts.push({ message: `🌱 Soil Too Dry: ${data.soilMoisture}`, time: now });
-      }
-
-      if (data.rainfall > thresholds.rainfall.high) {
-        alerts.push({ message: `🌧️ Heavy Rainfall: ${data.rainfall} mm`, time: now });
-      } else if (data.rainfall < thresholds.rainfall.low) {
-        alerts.push({ message: `🌧️ Very Low Rainfall: ${data.rainfall} mm`, time: now });
-      }
-
-      if (alerts.length > 0) {
-        setNotifications((prev) => [...alerts, ...prev]);
-      }
+        fetch("http://localhost:5000/sensor-data")
+        .then((res) => {
+          if (!res.ok) throw new Error("Server responded with error");
+          return res.json();
+        })
+        .then((data) => {
+          if (!data.connected) {
+            console.log("⚠️ Sensors not connected");
+            // optionally update state to show this in UI
+            return;
+          }
+          console.log("✅ Sensor Data:", data);
+          setSensorData(data);
+        })
+        .catch((err) => {
+          console.error("Error fetching sensor data:", err.message);
+        });
     }, 5000);
-
+  
     return () => clearInterval(interval);
-  }, [thresholds]);
-
+  }, []);
+  
+  
   const handleSettingsChange = (settings) => {
     if (settings.theme) setTheme(settings.theme);
     if (settings.thresholds) setThresholds(settings.thresholds);

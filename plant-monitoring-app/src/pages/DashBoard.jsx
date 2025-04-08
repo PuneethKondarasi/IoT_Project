@@ -16,8 +16,25 @@ const Dashboard = ({ thresholds }) => {
     temperature: { current: 29, unit: "°C" },
     humidity: { current: 78, unit: "%" },
     soilMoisture: { current: 59, unit: "%" },
-    rainfall: { current: 50, unit: "mm" }, // Kept in state
+    rainfall: { current: 50, unit: "mm" },
   });
+
+  const [liveSensorData, setLiveSensorData] = useState({
+    temperature: 0,
+    humidity: 0,
+    soilMoisture: 0,
+  });
+
+  const refreshDisplayData = () => {
+    setSensorData({
+      temperature: { current: liveSensorData.temperature, unit: "°C" },
+      humidity: { current: liveSensorData.humidity, unit: "%" },
+      soilMoisture: { current: liveSensorData.soilMoisture, unit: "%" },
+      rainfall: { current: 0, unit: "mm" },
+    });
+
+    checkThresholds();
+  };
 
   const checkThresholds = useCallback(() => {
     const currentTime = new Date().toLocaleTimeString();
@@ -41,8 +58,6 @@ const Dashboard = ({ thresholds }) => {
       } else if (sensorData.soilMoisture.current < thresholds.soilMoisture.low) {
         alerts.push(`⚠️ Low Soil Moisture Alert: ${sensorData.soilMoisture.current}% below threshold of ${thresholds.soilMoisture.low}% (${currentTime})`);
       }
-
-      // Rainfall alerts removed as requested
     }
 
     if (alerts.length > 0) {
@@ -55,34 +70,33 @@ const Dashboard = ({ thresholds }) => {
   }, [sensorData, thresholds, checkThresholds]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSensorData(prev => ({
-        temperature: {
-          current: Math.round((prev.temperature.current + (Math.random() * 2 - 1)) * 10) / 10,
-          unit: "°C",
-        },
-        humidity: {
-          current: Math.round(Math.min(100, Math.max(0, prev.humidity.current + (Math.random() * 4 - 2)))),
-          unit: "%",
-        },
-        soilMoisture: {
-          current: Math.round(Math.min(100, Math.max(0, prev.soilMoisture.current + (Math.random() * 3 - 1.5)))),
-          unit: "%",
-        },
-        rainfall: {
-          current: Math.round(Math.max(0, prev.rainfall.current + (Math.random() * 2 - 0.5))),
-          unit: "mm",
-        },
-      }));
-    }, 5000);
+    const fetchLiveSensorData = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/sensor-data");
+        if (!response.ok) throw new Error("Server responded with error");
 
+        const data = await response.json();
+
+        setLiveSensorData({
+          temperature: data.temperature,
+          humidity: data.humidity,
+          soilMoisture: Math.round(((1023 - data.soilMoisture) / 1023) * 100),
+        });
+
+        console.log("✅ Live sensor data:", data);
+      } catch (error) {
+        console.error("❌ Error fetching live sensor data:", error);
+      }
+    };
+
+    const interval = setInterval(fetchLiveSensorData, 2000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchPrediction = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:5000/predict", {
+      const response = await fetch("http://127.0.0.1:5001/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -116,11 +130,11 @@ const Dashboard = ({ thresholds }) => {
 
       <div className="flex justify-end">
         <button
-          onClick={checkThresholds}
+          onClick={refreshDisplayData}
           className="flex items-center space-x-1 bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-md"
         >
           <ArrowPathIcon className="h-4 w-4" />
-          <span>Check Thresholds</span>
+          <span>Refresh Display</span>
         </button>
       </div>
 
@@ -155,20 +169,40 @@ const Dashboard = ({ thresholds }) => {
           unit={sensorData.rainfall.unit}
           icon={SunIcon}
           color="border-purple-500"
-          thresholds={null} // No threshold for rainfall
+          thresholds={null}
         />
       </div>
 
       <AlertsHistory alerts={notifications} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SensorChart title="Temperature" data={{ labels: [], values: [] }} color="rgb(249, 115, 22)" unit="°C" />
-        <SensorChart title="Humidity" data={{ labels: [], values: [] }} color="rgb(59, 130, 246)" unit="%" />
+        <SensorChart
+          title="Temperature"
+          data={{ labels: [new Date().toLocaleTimeString()], values: [liveSensorData.temperature] }}
+          color="rgb(249, 115, 22)"
+          unit="°C"
+        />
+        <SensorChart
+          title="Humidity"
+          data={{ labels: [new Date().toLocaleTimeString()], values: [liveSensorData.humidity] }}
+          color="rgb(59, 130, 246)"
+          unit="%"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SensorChart title="Soil Moisture" data={{ labels: [], values: [] }} color="rgb(16, 185, 129)" unit="%" />
-        <SensorChart title="Rainfall" data={{ labels: [], values: [] }} color="rgb(139, 92, 246)" unit="mm" />
+        <SensorChart
+          title="Soil Moisture"
+          data={{ labels: [new Date().toLocaleTimeString()], values: [liveSensorData.soilMoisture] }}
+          color="rgb(16, 185, 129)"
+          unit="%"
+        />
+        <SensorChart
+          title="Rainfall"
+          data={{ labels: [new Date().toLocaleTimeString()], values: [sensorData.rainfall.current] }}
+          color="rgb(139, 92, 246)"
+          unit="mm"
+        />
       </div>
 
       {showGenerateButton ? (
