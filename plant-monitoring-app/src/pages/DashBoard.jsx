@@ -32,7 +32,7 @@ const Dashboard = ({ thresholds }) => {
     rainfall: null,
   });
 
-  const [forecastRainfall, setForecastRainfall] = useState(0);
+  const [setForecastRainfall] = useState(0);
 
   useEffect(() => {
     const fetchRainfallForecast = async () => {
@@ -146,7 +146,7 @@ const Dashboard = ({ thresholds }) => {
         body: JSON.stringify({
           temperature: sensorData.temperature.current,
           humidity: sensorData.humidity.current,
-          soilMoisture: sensorData.soilMoisture.current,  // ✅ FIXED HERE
+          soilMoisture: sensorData.soilMoisture.current, 
           rainfall: sensorData.rainfall.current,
         }),
       });

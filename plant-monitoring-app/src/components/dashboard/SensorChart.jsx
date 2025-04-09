@@ -35,7 +35,7 @@ const SensorChart = ({ title, data, color, unit }) => {
       // Add new data point to history
       dataHistory.current.push({
         label: timestamp,
-        value: data.values[data.values.length - 1] // latest value
+        value: data.values[data.values.length - 1] 
       });
 
       // Keep only the last 20 seconds worth of data (assuming 1 data/sec)
@@ -43,7 +43,6 @@ const SensorChart = ({ title, data, color, unit }) => {
         dataHistory.current.shift();
       }
 
-      // Separate labels and values
       const labels = dataHistory.current.map(d => d.label);
       const values = dataHistory.current.map(d => d.value);
 

@@ -9,8 +9,8 @@ import "./index.css";
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
-  const [notifications, setNotifications] = useState([]); // ✅ New state
-  const [sensorData, setSensorData] = useState({ // ✅ New state
+  const [notifications] = useState([]);
+  const [sensorData, setSensorData] = useState({
     temperature: 0,
     humidity: 0,
     soilMoisture: 0,
@@ -36,19 +36,6 @@ function App() {
     },
   });
 
-  // Apply theme
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("bg-gray-900", "text-white");
-      document.body.classList.remove("bg-white", "text-gray-900");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.body.classList.remove("bg-gray-900", "text-white");
-      document.body.classList.add("bg-white", "text-gray-900");
-    }
-  }, [theme]);
-
   // Simulate sensor data every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -58,11 +45,6 @@ function App() {
           return res.json();
         })
         .then((data) => {
-          if (!data.connected) {
-            console.log("⚠️ Sensors not connected");
-            // optionally update state to show this in UI
-            return;
-          }
           console.log("✅ Sensor Data:", data);
           setSensorData(data);
         })
@@ -92,7 +74,7 @@ function App() {
           <Navbar
             toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
             theme={theme}
-            notifications={notifications} // ✅ Pass notifications
+            notifications={notifications}
           />
           <div
             className={`p-8 flex-1 overflow-y-auto ${
@@ -105,7 +87,7 @@ function App() {
                 element={
                   <Dashboard
                     thresholds={thresholds}
-                    sensorData={sensorData} // ✅ Pass sensor data
+                    sensorData={sensorData}
                     notifications={notifications}
                   />
                 }

@@ -5,6 +5,10 @@ import threading
 import requests
 import time
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -12,9 +16,9 @@ CORS(app)
 SERIAL_PORT = 'COM4'
 BAUD_RATE = 9600
 
-OPENWEATHER_API_KEY = "63a90ae96d390ec37d6c1252f5a86e1a"
-CITY_NAME = "Katpadi,IN"
-RAIN_INTERVAL = 600  # Fetch rainfall every 10 minutes
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+CITY_NAME = os.getenv("CITY_NAME", "Katpadi,IN")
+RAIN_INTERVAL = 600
 
 latest_data = {
     "temperature": 0,
