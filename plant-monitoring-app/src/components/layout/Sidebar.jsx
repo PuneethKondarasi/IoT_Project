@@ -1,11 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { HomeIcon, ChartBarIcon, Cog6ToothIcon, XMarkIcon, Bars3Icon } from "@heroicons/react/24/outline";
+import { HomeIcon, Cog6ToothIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
 
 const Sidebar = ({ open, setOpen }) => {
   const location = useLocation();
 
-  // Close sidebar when clicking outside of it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (open && !event.target.closest(".sidebar-container")) {
@@ -23,10 +22,8 @@ const Sidebar = ({ open, setOpen }) => {
 
   return (
     <>
-      {/* Mobile sidebar overlay (only visible when open) */}
-      {open && <div className="fixed inset-0 z-40 bg-gray-900 bg-opacity-75 lg:hidden"></div>}
+      {open && <div className="fixed inset-0 z-40 bg-gray-900 bg-opacity-75 lg:hidden" />}
 
-      {/* Sidebar Container */}
       <div
         className={`
           fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-700
@@ -35,7 +32,6 @@ const Sidebar = ({ open, setOpen }) => {
           lg:translate-x-0 lg:static lg:w-20 xl:w-64
         `}
       >
-        {/* Sidebar Header (Removed Logo) */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
           <span className="text-xl font-semibold text-white xl:block hidden">PlantSense</span>
           <button
@@ -46,7 +42,6 @@ const Sidebar = ({ open, setOpen }) => {
           </button>
         </div>
 
-        {/* Sidebar Navigation */}
         <nav className="flex flex-col h-full py-4">
           <ul className="flex-1 px-2 space-y-1">
             {navigation.map((item) => {
