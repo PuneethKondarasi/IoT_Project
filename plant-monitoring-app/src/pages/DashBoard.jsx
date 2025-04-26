@@ -123,7 +123,7 @@ const Dashboard = ({ thresholds }) => {
         const data = await response.json();
         const temp = data.temperature;
         const hum = data.humidity;
-        const moist = Math.round(((1023 - data.soilMoisture) / 1023) * 100);
+        const moist = Math.max(0, Math.min(100, data.soilMoisture));
         const rain = data.rainfall;
 
         setLiveSensorData({ temperature: temp, humidity: hum, soilMoisture: moist, rainfall: rain });

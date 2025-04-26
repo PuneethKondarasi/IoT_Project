@@ -35,21 +35,30 @@ def fetch_rainfall_forecast():
             response = requests.get(url)
             data = response.json()
 
-            today = datetime.utcnow().date()
-            total_rain_today = 0.0
+            total_rain_5_days = 0.0
+            forecast_days = set()
 
             for entry in data["list"]:
-                forecast_time = datetime.strptime(entry["dt_txt"], "%Y-%m-%d %H:%M:%S")
-                if forecast_time.date() == today:
-                    if "rain" in entry and "3h" in entry["rain"]:
-                        total_rain_today += entry["rain"]["3h"]
+                if "rain" in entry and "3h" in entry["rain"]:
+                    total_rain_5_days += entry["rain"]["3h"]
+                    forecast_time = datetime.strptime(entry["dt_txt"], "%Y-%m-%d %H:%M:%S")
+                    forecast_days.add(forecast_time.date())
 
-            latest_data["rainfall"] = round(total_rain_today, 2)
-            print(f"🌧️ Forecasted Rainfall Today: {total_rain_today} mm")
+            days_counted = len(forecast_days)
+            daily_avg_rainfall = total_rain_5_days / days_counted if days_counted else 0
+
+            crop_cycle_days = 90
+            estimated_seasonal_rainfall = round(daily_avg_rainfall * crop_cycle_days, 2)
+
+            latest_data["rainfall"] = estimated_seasonal_rainfall
+
+            print(f"🌧️ Forecasted Rainfall over {crop_cycle_days} days: {estimated_seasonal_rainfall} mm (based on {days_counted} days of forecast)")
+        
         except Exception as e:
             print(f"❌ Error fetching forecast rainfall: {e}")
 
         time.sleep(RAIN_INTERVAL)
+
 
 def read_serial():
     global latest_data

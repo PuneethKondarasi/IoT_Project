@@ -31,7 +31,7 @@ function App() {
       low: parseInt(localStorage.getItem("threshold.soilMoisture.low")) || 30,
     },
     rainfall: {
-      high: parseInt(localStorage.getItem("threshold.rainfall.high")) || 100,
+      high: parseInt(localStorage.getItem("threshold.rainfall.high")) || 1500,
       low: parseInt(localStorage.getItem("threshold.rainfall.low")) || 0,
     },
   });
